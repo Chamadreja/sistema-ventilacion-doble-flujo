@@ -1,0 +1,34 @@
+#include <MQ2.h>
+
+// Define the pin for the MQ2 sensor
+#define MQ2_PIN A0
+
+// Create an instance of the MQ2 sensor
+MQ2 mq2(MQ2_PIN);
+
+// Define the resistance of the calibration resistor (in ohms)
+#define CALIBRATION_RESISTANCE 10000
+
+// Define the concentration of propane gas used for calibration (in ppm)
+#define CALIBRATION_CONCENTRATION 1000
+
+void setup() {
+  // Initialize serial communication
+  Serial.begin(9600);
+
+  // Calibrate the MQ2 sensor for propane gas
+  mq2.calibrate(CALIBRATION_RESISTANCE, CALIBRATION_CONCENTRATION);
+}
+
+void loop() {
+  // Read the sensor values
+  float ppm = mq2.readPropane();
+
+  // Print the ppm value to the serial monitor
+  Serial.print("Propane: ");
+  Serial.print(ppm);
+  Serial.println(" ppm");
+
+  // Wait for a short period before taking the next reading
+  delay(1000);
+}

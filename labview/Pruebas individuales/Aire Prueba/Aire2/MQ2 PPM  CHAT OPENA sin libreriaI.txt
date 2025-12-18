@@ -1,0 +1,59 @@
+// Define the pin for the MQ2 sensor
+#define MQ2_PIN A0
+
+// Define the calibration resistance (in ohms)
+#define CALIBRATION_RESISTANCE 10000
+
+// Define the concentration of propane gas used for calibration (in ppm)
+#define CALIBRATION_CONCENTRATION 1000
+
+// Define the load resistance (in ohms)
+#define LOAD_RESISTANCE 10000
+
+void setup() {
+  // Initialize serial communication
+  Serial.begin(9600);
+
+  // Allow time for the sensor to warm up
+  delay(5000);
+
+  // Calibrate the MQ2 sensor for propane gas
+  float ro = mq2Calibrate(CALIBRATION_RESISTANCE, CALIBRATION_CONCENTRATION, LOAD_RESISTANCE);
+  Serial.print("Calibrated Ro: ");
+  Serial.println(ro);
+}
+
+void loop() {
+  // Read the sensor values
+  float sensorValue = analogRead(MQ2_PIN);
+  float rs = (LOAD_RESISTANCE * (1023.0 - sensorValue) / sensorValue);
+  float ppm = mq2GetGasPercentage(rs / ro, GAS_PROPANE);
+
+  // Print the ppm value to the serial monitor
+  Serial.print("Propane: ");
+  Serial.print(ppm);
+  Serial.println(" ppm");
+
+  // Wait for a short period before taking the next reading
+  delay(1000);
+}
+
+float mq2Calibrate(int calibrationResistance, int concentration, int loadResistance) {
+  int samples = 50;
+  float rs = 0;
+  for (int i = 0; i < samples; i++) {
+    int sensorValue = analogRead(MQ2_PIN);
+    rs += (loadResistance * (1023.0 - sensorValue) / sensorValue);
+    delay(10);
+  }
+  rs /= samples;
+  float ro = rs / ((float)concentration / 1000.0) * exp(1.67 * log((float)calibrationResistance / LOAD_RESISTANCE));
+  return ro;
+}
+
+float mq2GetGasPercentage(float rs_ro_ratio, int gasType) {
+  if (gasType == GAS_PROPANE) {
+    return (pow(10, ((log(rs_ro_ratio) - 2.251) / 0.727)));
+  }
+  return 0;
+}

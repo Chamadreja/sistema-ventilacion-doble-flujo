@@ -1,0 +1,34 @@
+// Include required libraries
+#include <MQUnifiedSensor.h>
+
+// Define MQ-2 gas sensor pin and calibration values
+#define GAS_SENSOR_PIN A0
+#define GAS_RO_CLEAN_AIR_FACTOR 9.83 // RO_CLEAN_AIR_FACTOR obtained from calibration
+#define GAS_LPG_CONCENTRATION_PPM 10000 // LPG concentration in parts per million (ppm)
+
+// Create instance of MQUnifiedSensor class
+MQUnifiedSensor mq2Sensor = MQUnifiedSensor(GAS_SENSOR_PIN, GAS_RO_CLEAN_AIR_FACTOR);
+
+void setup() {
+  Serial.begin(9600); // Initialize serial communication
+  Serial.println("MQ-2 Gas Sensor Calibration");
+  mq2Sensor.setRegressionMethod(1); // Set the regression method to use linear regression
+  mq2Sensor.setAveraging(10); // Set the averaging method to use 10 samples
+  mq2Sensor.setUnit("ppm"); // Set the unit of measurement to parts per million (ppm)
+  mq2Sensor.setCorrectionFactor(1.5); // Set the correction factor to account for variations in temperature and humidity
+}
+
+void loop() {
+  float gasPPM = mq2Sensor.readSensor(); // Read the gas concentration in parts per million (ppm)
+  Serial.print("Gas concentration: ");
+  Serial.print(gasPPM);
+  Serial.println(" ppm");
+
+  if (gasPPM > GAS_LPG_CONCENTRATION_PPM) {
+    Serial.println("LPG gas detected!");
+  } else {
+    Serial.println("No LPG gas detected");
+  }
+
+  delay(1000); // Delay for 1 second before taking the next measurement
+}

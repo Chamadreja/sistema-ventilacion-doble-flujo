@@ -1,0 +1,36 @@
+#define         RL 1  //1k ohm
+float Analog_value = 0;
+float VRL=0;
+float Rs=0;
+float Ro=3.75;
+float m= -0.467;
+float b= 1.29;
+float Ratio;
+float ppm;
+#define         MQ2 A0
+void setup() {
+  // put your setup code here, to run once:
+pinMode(MQ2,INPUT);
+Serial.begin(115200);
+
+}
+
+void loop() 
+{
+ Analog_value=analogRead(MQ2);
+ 
+// VRL =  Analog_value*(3.3/4095);
+// Rs=((3.3/VRL)-1)*RL;
+
+ VRL =  Analog_value*(5.0/1024);
+ Rs=((5.0/VRL)-1)*RL;
+
+ Ratio= Rs/Ro;
+ ppm=pow(10,((log10(Ratio)-b)/m));
+ //Ro=Rs/9.8;
+ Serial.print("Rs/Ro= ");
+ Serial.println(Ratio);
+ Serial.print("concentracion de GLP en ppm= ");
+ Serial.println(ppm);
+ delay(1000);
+}
